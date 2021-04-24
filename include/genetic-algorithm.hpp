@@ -5,8 +5,6 @@ void rouletteRanking(int populationSize, float *fitness, float minFitness, int *
 
 void linearRanking(int populationSize, float *fitness, bool maximizeFitness, float selectionPressure, int *winners, int winnersSize);
 
-void deleteProbabilities(float* probabilities, bool linear);
-
 void exponentialRanking(int populationSize, float *fitness, bool maximizeFitness, float k1, int *winners, int winnersSize);
 
 void tournamentRanking(int populationSize, float *fitness, bool maximizeFitness, int tournamentSize, int *winners, int winnersSize);

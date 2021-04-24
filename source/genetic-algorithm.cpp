@@ -169,7 +169,7 @@ void linearRanking(int populationSize, float *fitness, bool maximizeFitness, flo
     for(int i=0;i<winnersSize;++i){
         winners[i] = ranksLookup[std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize-1, dis(gen)) - cumulativeProbabilities];
     }
-    delete cumulativeProbabilities;
+    deleteProbabilities(cumulativeProbabilities, true);
     delete ranksLookup;
 }
 
@@ -285,7 +285,7 @@ void exponentialRanking(int populationSize, float *fitness, bool maximizeFitness
     for(int i=0;i<winnersSize;++i){
         winners[i] = ranksLookup[std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize-1, dis(gen)) - cumulativeProbabilities];
     }
-    delete cumulativeProbabilities;
+    deleteProbabilities(cumulativeProbabilities, false);
     delete ranksLookup;
 }
 
