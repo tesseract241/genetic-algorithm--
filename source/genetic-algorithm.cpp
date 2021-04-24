@@ -5,6 +5,7 @@
 #include <cstring>
 #include <unordered_map>
 #include <vector>
+#include <genetic-algorithm.hpp>
 
 const int storedProbabilities   = 5;
 const int trackedProbabilities  = 10;
