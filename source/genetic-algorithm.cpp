@@ -156,24 +156,6 @@ float* linearRankingProbabilitiesGenerator(float selectionPressure, int populati
     return temp_probabilities;
 }
 
-void linearRanking(int populationSize, float *fitness, bool maximizeFitness, float selectionPressure, int *winners, int winnersSize){
-    assert(selectionPressure>1 && selectionPressure<2 && "linearRanking: selectionPressure must be between 1 and 2 , extremes excluded.\n");
-    int *ranksLookup = new int[populationSize];
-    calculateRanks(fitness, populationSize, maximizeFitness, ranksLookup);
-    float *cumulativeProbabilities = linearRankingProbabilitiesGenerator(selectionPressure, populationSize);
-    if(!winners){
-        winners = new int[winnersSize];
-    }
-    std::random_device rd;  
-    std::mt19937 gen(rd()); 
-    std::uniform_real_distribution<> dis(cumulativeProbabilities[0], cumulativeProbabilities[populationSize-1]);
-    for(int i=0;i<winnersSize;++i){
-        winners[i] = ranksLookup[std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize-1, dis(gen)) - cumulativeProbabilities];
-    }
-    deleteProbabilities(cumulativeProbabilities, true);
-    delete ranksLookup;
-}
-
 void deleteProbabilities(float* probabilities, bool linear){
     bool exists = false;
     if(linear){
@@ -194,6 +176,25 @@ void deleteProbabilities(float* probabilities, bool linear){
     if(!exists){
         delete probabilities;
     }
+}
+
+
+void linearRanking(int populationSize, float *fitness, bool maximizeFitness, float selectionPressure, int *winners, int winnersSize){
+    assert(selectionPressure>1 && selectionPressure<2 && "linearRanking: selectionPressure must be between 1 and 2 , extremes excluded.\n");
+    int *ranksLookup = new int[populationSize];
+    calculateRanks(fitness, populationSize, maximizeFitness, ranksLookup);
+    float *cumulativeProbabilities = linearRankingProbabilitiesGenerator(selectionPressure, populationSize);
+    if(!winners){
+        winners = new int[winnersSize];
+    }
+    std::random_device rd;  
+    std::mt19937 gen(rd()); 
+    std::uniform_real_distribution<> dis(cumulativeProbabilities[0], cumulativeProbabilities[populationSize-1]);
+    for(int i=0;i<winnersSize;++i){
+        winners[i] = ranksLookup[std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize-1, dis(gen)) - cumulativeProbabilities];
+    }
+    deleteProbabilities(cumulativeProbabilities, true);
+    delete ranksLookup;
 }
 
 void calculateExponentialRankingProbabilities(float k1, float *probabilities, int populationSize, float startingValue, int startingIndex){
