@@ -227,34 +227,35 @@ float* exponentialRankingProbabilitiesGenerator(float k1, int populationSize){
             }
             temp_probabilities = temp_data->probabilities;
             temp_data->usage++;
-        }
-    if(temp_data){
-        int rank=0;
-        RanksData* nextData = temp_data;
-        for(const auto& m : exponentialRanksData){
-            if(m.second.usage>temp_data->usage){
-                rank++;
-            } else {
-                if(m.second.usage>nextData->usage){
-                    nextData = const_cast<RanksData*>(&(m.second));
+        if(temp_data){
+            int rank=0;
+            RanksData* nextData = temp_data;
+            for(const auto& m : exponentialRanksData){
+                if(m.second.usage>temp_data->usage){
+                    rank++;
+                } else {
+                    if(m.second.usage>nextData->usage){
+                        nextData = const_cast<RanksData*>(&(m.second));
+                    }
                 }
             }
-        }
-        if(rank<storedProbabilities){
-            if(previousRank>=storedProbabilities){
-                calculateExponentialRankingProbabilities(k1, temp_probabilities, populationSize, 0., 0);
-                delete nextData->probabilities;
-                temp_data->populationSize = populationSize;
-            }
-            else{
-                int currentPopSize = temp_data->populationSize;
-                if(populationSize>currentPopSize){
-                    calculateExponentialRankingProbabilities(k1, temp_probabilities, populationSize, temp_probabilities[currentPopSize-1], currentPopSize-1);
+            if(rank<storedProbabilities){
+                if(previousRank>=storedProbabilities){
+                    calculateExponentialRankingProbabilities(k1, temp_probabilities, populationSize, 0., 0);
+                    delete nextData->probabilities;
                     temp_data->populationSize = populationSize;
                 }
+                else{
+                    int currentPopSize = temp_data->populationSize;
+                    if(populationSize>currentPopSize){
+                        calculateExponentialRankingProbabilities(k1, temp_probabilities, populationSize, temp_probabilities[currentPopSize-1], currentPopSize-1);
+                        temp_data->populationSize = populationSize;
+                    }
+                }
             }
         }
-    } else {
+    } 
+    if(!temp_data){
         calculateExponentialRankingProbabilities(k1, temp_probabilities, populationSize, 0., 0);
         bool mustBreak = false;
         for(const auto& m : exponentialRanksData){
