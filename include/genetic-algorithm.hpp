@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-void rouletteRanking(int populationSize, float *fitness, float minFitness, int *winners, int winnersSize);
+void rouletteRanking(int populationSize, float *fitness, int *winners, int winnersSize);
 
 void linearRanking(int populationSize, float *fitness, bool maximizeFitness, float selectionPressure, int *winners, int winnersSize);
 

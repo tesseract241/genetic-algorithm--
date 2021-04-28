@@ -18,9 +18,10 @@ struct RanksData{
 std::unordered_map<float, std::unordered_map<int, RanksData>> linearRanksData;
 std::unordered_map<float, RanksData> exponentialRanksData;
 
-void rouletteRanking(int populationSize, float *fitness, float minFitness, int *winners, int winnersSize){
+void rouletteRanking(int populationSize, float *fitness, int *winners, int winnersSize){
     assert(populationSize && "rouletteRanking: populationSize was 0\n");
     float *cumulativeProbabilities = new float[populationSize];
+    float minFitness = *std::min_element(fitness, fitness+populationSize);
     if(minFitness>=0){
         cumulativeProbabilities[0] = fitness[0];
         for(int i=1;i<populationSize;++i){
