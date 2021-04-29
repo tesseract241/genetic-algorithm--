@@ -349,6 +349,28 @@ void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t 
    std::memcpy(child+cut2, parent1+cut2, length - cut2);
 }
 
+void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child){
+   assert(length>2 && "twoPointsCrossover: can't crossover genomes of size less than 3.\n");
+    if(!child){
+        child = new uint8_t[length];
+   }
+   std::random_device rd;  
+   std::mt19937 gen(rd()); 
+   std::uniform_int_distribution<> dis(1, length-2);
+   int cut1 = dis(gen);
+   int cut2;
+   do{cut2 = dis(gen);} while(cut2==cut1);
+   if(cut1>cut2){
+        int dummy = cut2;
+        cut2 = cut1;
+        cut1= dummy;
+   }
+   std::memcpy(child, parent1, cut1);
+   std::memcpy(child+cut1, parent2+cut1, cut2 - cut1);
+   std::memcpy(child+cut2, parent1+cut2, length - cut2);
+}
+
+
 void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint8_t *genesLoci, uint8_t genesLociLength){
    assert(std::is_sorted(genesLoci, genesLoci+genesLociLength) && "uniformCrossover: genesLoci needs to be sorted in non-descending order.\n");
     if(!child){
@@ -370,6 +392,19 @@ void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *c
     }
 }
 
+void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child){
+    if(!child){
+        child = new uint8_t[length];
+    }
+    std::random_device rd;  
+    std::mt19937 gen(rd()); 
+    std::uniform_int_distribution<uint64_t> dis(0, UINT64_MAX);
+    uint64_t mask = dis(gen);
+    for(int i=0;i<length;++i){
+        uint8_t maskBit = mask & (1<<i);
+        child[i] = parent1[i]*maskBit + parent2[i]*(1 - maskBit);
+    }
+}
 void mutate(uint8_t *individual, int length, float mutationProbability){
     assert(mutationProbability>0 && "mutate: mutationProbability must be greater than 0.\n");
     assert(mutationProbability<1 && "mutate: mutationProbability must be less than 1.\n");
