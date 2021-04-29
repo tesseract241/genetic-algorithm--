@@ -9,8 +9,8 @@ void exponentialRanking(int populationSize, float *fitness, bool maximizeFitness
 
 void tournamentRanking(int populationSize, float *fitness, bool maximizeFitness, int tournamentSize, int *winners, int winnersSize);
 
-void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child);
+void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint8_t *genesLoci, uint8_t genesLociLength);
 
-void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child);
+void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint8_t *genesLoci, uint8_t genesLociLength);
 
 void mutate(uint8_t *individual, int length, float mutationProbability);
