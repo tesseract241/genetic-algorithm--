@@ -52,7 +52,7 @@ void rouletteRanking(int populationSize, float *fitness, int *winners, int winne
     }
     for(int i=0;i<winnersSize;++i){
         float pick = dis(gen);
-        winners[i] = *std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize-1, pick); 
+        winners[i] = *std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize, pick); 
     }
     delete cumulativeProbabilities;
 }
@@ -191,7 +191,7 @@ void linearRanking(int populationSize, float *fitness, bool maximizeFitness, flo
     std::mt19937 gen(rd()); 
     std::uniform_real_distribution<> dis(cumulativeProbabilities[0], cumulativeProbabilities[populationSize-1]);
     for(int i=0;i<winnersSize;++i){
-        winners[i] = ranksLookup[std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize-1, dis(gen)) - cumulativeProbabilities];
+        winners[i] = ranksLookup[std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize, dis(gen)) - cumulativeProbabilities];
     }
     deleteProbabilities(cumulativeProbabilities, true);
     delete ranksLookup;
@@ -286,7 +286,7 @@ void exponentialRanking(int populationSize, float *fitness, bool maximizeFitness
     std::mt19937 gen(rd()); 
     std::uniform_real_distribution<> dis(cumulativeProbabilities[0], cumulativeProbabilities[populationSize-1]);
     for(int i=0;i<winnersSize;++i){
-        winners[i] = ranksLookup[std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize-1, dis(gen)) - cumulativeProbabilities];
+        winners[i] = ranksLookup[std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize, dis(gen)) - cumulativeProbabilities];
     }
     deleteProbabilities(cumulativeProbabilities, false);
     delete ranksLookup;
