@@ -411,18 +411,10 @@ void mutate(uint8_t *individual, int length, float mutationProbability){
     std::random_device rd;  
     std::mt19937 gen(rd()); 
     std::uniform_real_distribution<float> prob(0, 1);
-    std::div_t div = std::div(length, 8);
-    std::uniform_int_distribution<uint64_t> mut64(0, UINT64_MAX);
-    uint64_t *ptr = (uint64_t*) individual;
-    for(int i=0;i<div.quot;++i){
+    std::uniform_int_distribution<uint8_t> dis8(0, 7);
+    for(int i=0;i<length;++i){
         if(prob(gen)<mutationProbability){
-            ptr[i]^= mut64(gen);
-        }
-    }
-    std::uniform_int_distribution<uint8_t> mut8(0, UINT8_MAX);
-    for(int i=div.quot*8;i<length;++i){
-        if(prob(gen)<mutationProbability){
-            individual[i]^=mut8(gen);
+            *individual^= (1<<dis8(gen));
         }
     }
 }
