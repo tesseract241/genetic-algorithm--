@@ -326,7 +326,7 @@ void tournamentRanking(int populationSize, float *fitness, bool maximizeFitness,
     delete ranksLookup;
 }
 
-void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint8_t *genesLoci, uint8_t genesLociLength){
+void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint8_t *genesLoci, int genesLociLength){
    assert(length>2 && "twoPointsCrossover: can't crossover genomes of size less than 3.\n");
    assert(genesLociLength>2 && "twoPointsCrossover: can't crossover genomes with less than 3 genes.\n");
    assert(std::is_sorted(genesLoci, genesLoci+genesLociLength) && "twoPointsCrossover: genesLoci needs to be sorted in non-descending order.\n");
@@ -371,7 +371,7 @@ void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t 
 }
 
 
-void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint8_t *genesLoci, uint8_t genesLociLength){
+void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint8_t *genesLoci, int genesLociLength){
    assert(std::is_sorted(genesLoci, genesLoci+genesLociLength) && "uniformCrossover: genesLoci needs to be sorted in non-descending order.\n");
     if(!child){
         child = new uint8_t[length];
