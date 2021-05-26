@@ -326,7 +326,7 @@ void tournamentRanking(int populationSize, float *fitness, bool maximizeFitness,
     delete ranksLookup;
 }
 
-void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint8_t *genesLoci, int genesLociLength){
+void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint64_t *genesLoci, int genesLociLength){
    assert(length>2 && "twoPointsCrossover: can't crossover genomes of size less than 3.\n");
    assert(genesLociLength>2 && "twoPointsCrossover: can't crossover genomes with less than 3 genes.\n");
    assert(std::is_sorted(genesLoci, genesLoci+genesLociLength) && "twoPointsCrossover: genesLoci needs to be sorted in non-descending order.\n");
@@ -336,11 +336,11 @@ void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t 
    std::random_device rd;  
    std::mt19937 gen(rd()); 
    std::uniform_int_distribution<> dis(0, genesLociLength-1);
-   int cut1 = genesLoci[dis(gen)];
-   int cut2;
+   uint64_t cut1 = genesLoci[dis(gen)];
+   uint64_t cut2;
    do{cut2 = genesLoci[dis(gen)];} while(cut2==cut1);
    if(cut1>cut2){
-        int dummy = cut2;
+        uint64_t dummy = cut2;
         cut2 = cut1;
         cut1= dummy;
    }
@@ -371,7 +371,7 @@ void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t 
 }
 
 
-void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint8_t *genesLoci, int genesLociLength){
+void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint64_t *genesLoci, int genesLociLength){
    assert(std::is_sorted(genesLoci, genesLoci+genesLociLength) && "uniformCrossover: genesLoci needs to be sorted in non-descending order.\n");
     if(!child){
         child = new uint8_t[length];
@@ -380,15 +380,29 @@ void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *c
     std::mt19937 gen(rd()); 
     std::uniform_int_distribution<uint64_t> dis(0, UINT64_MAX);
     uint64_t mask = dis(gen);
-    uint8_t *_genesLoci = new uint8_t[genesLociLength+2];
-    _genesLoci[0] = 0;
-    _genesLoci[genesLociLength+1] = length;
-    std::memcpy(_genesLoci+1, genesLoci, genesLociLength);
-    for(int i=0;i<genesLociLength+2;++i){
-        uint8_t maskBit = mask & (1<<i);
-        for(int j=_genesLoci[i];j<_genesLoci[i+1];++j){
-            child[i] = parent1[i]*maskBit + parent2[i]*(1 - maskBit);
+    if(genesLoci[0]!=0){
+        uint64_t *_genesLoci = new uint64_t[genesLociLength+2];
+        _genesLoci[0] = 0;
+        _genesLoci[genesLociLength+1] = length;
+        std::memcpy(_genesLoci+1, genesLoci, genesLociLength);
+        for(int i=0;i<genesLociLength+2;++i){
+            uint8_t maskBit = mask & (1<<i);
+            for(uint64_t j=_genesLoci[i];j<_genesLoci[i+1];++j){
+                child[i] = parent1[i]*maskBit + parent2[i]*(1 - maskBit);
+            }
         }
+        delete _genesLoci;
+    } else {
+        uint64_t *_genesLoci = new uint64_t[genesLociLength+1];
+        _genesLoci[genesLociLength] = length;
+        std::memcpy(_genesLoci, genesLoci, genesLociLength);
+        for(int i=0;i<genesLociLength+1;++i){
+            uint8_t maskBit = mask & (1<<i);
+            for(uint64_t j=_genesLoci[i];j<_genesLoci[i+1];++j){
+                child[i] = parent1[i]*maskBit + parent2[i]*(1 - maskBit);
+            }
+        }
+        delete _genesLoci;
     }
 }
 
