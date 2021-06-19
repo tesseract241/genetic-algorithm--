@@ -52,7 +52,7 @@ void rouletteRanking(int populationSize, float *fitness, int *winners, int winne
     }
     for(int i=0;i<winnersSize;++i){
         float pick = dis(gen);
-        winners[i] = *std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize, pick); 
+        winners[i] = std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize, pick) - cumulativeProbabilities; 
     }
     delete cumulativeProbabilities;
 }
