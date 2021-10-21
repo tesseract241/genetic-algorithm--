@@ -316,7 +316,7 @@ void tournamentRanking(int populationSize, float *fitness, bool maximizeFitness,
     delete[] ranksLookup;
 }
 
-void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint64_t *genesLoci, int genesLociLength){
+void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, uint64_t length, uint8_t *child, uint64_t *genesLoci, int genesLociLength){
    assert(length>2 && "twoPointsCrossover: can't crossover genomes of size less than 3.\n");
    assert(genesLociLength>2 && "twoPointsCrossover: can't crossover genomes with less than 3 genes.\n");
    assert(std::is_sorted(genesLoci, genesLoci+genesLociLength) && "twoPointsCrossover: genesLoci needs to be sorted in non-descending order.\n");
@@ -337,7 +337,7 @@ void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t 
    std::memcpy(child+cut2, parent1+cut2, length - cut2);
 }
 
-void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child){
+void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, uint64_t length, uint8_t *child){
    assert(length>2 && "twoPointsCrossover: can't crossover genomes of size less than 3.\n");
    assert(child);
    std::random_device rd;  
@@ -357,47 +357,43 @@ void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t 
 }
 
 
-void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint64_t *genesLoci, int genesLociLength){
+void uniformCrossover(uint8_t *parent1, uint8_t *parent2, uint64_t length, uint8_t *child, uint64_t *genesLoci, int genesLociLength){
    assert(std::is_sorted(genesLoci, genesLoci+genesLociLength) && "uniformCrossover: genesLoci needs to be sorted in non-descending order.\n");
     assert(child);
     std::random_device rd;  
     std::mt19937 gen(rd()); 
-    std::uniform_int_distribution<uint64_t> dis(0, UINT64_MAX);
-    uint64_t mask = dis(gen);
-    if(genesLoci[0]!=0){
-        uint64_t *_genesLoci = new uint64_t[genesLociLength+2];
+    std::uniform_int_distribution<uint8_t> dis(0, 1);
+    if(genesLoci[0]!=0 || genesLoci[genesLociLength-1]!=length-1){
+        uint64_t start  = genesLoci[0]!=0 ? 1 : 0;
+        uint64_t end    = genesLoci[genesLociLength-1]!=length-1 ? 1 : 0;
+        uint64_t *_genesLoci = new uint64_t[genesLociLength + start + end];
         _genesLoci[0] = 0;
-        _genesLoci[genesLociLength+1] = length;
-        std::memcpy(_genesLoci+1, genesLoci, genesLociLength);
-        for(int i=0;i<genesLociLength+2;++i){
-            uint8_t maskBit = mask & (1<<i);
+        _genesLoci[genesLociLength + start + end - 1] = length - 1;
+        std::memcpy(_genesLoci + start, genesLoci, genesLociLength);
+        for(uint64_t i=0;i<genesLociLength + start + end - 1;++i){
+            uint8_t maskBit = dis(gen);
             for(uint64_t j=_genesLoci[i];j<_genesLoci[i+1];++j){
-                child[i] = parent1[i]*maskBit + parent2[i]*(1 - maskBit);
+                child[j] = parent1[j]*maskBit + parent2[j]*(1 - maskBit);
             }
         }
         delete[] _genesLoci;
-    } else {
-        uint64_t *_genesLoci = new uint64_t[genesLociLength+1];
-        _genesLoci[genesLociLength] = length;
-        std::memcpy(_genesLoci, genesLoci, genesLociLength);
-        for(int i=0;i<genesLociLength+1;++i){
-            uint8_t maskBit = mask & (1<<i);
-            for(uint64_t j=_genesLoci[i];j<_genesLoci[i+1];++j){
-                child[i] = parent1[i]*maskBit + parent2[i]*(1 - maskBit);
+    } else{
+        for(int i=0;i<genesLociLength-1;++i){
+            uint8_t maskBit = dis(gen);
+            for(uint64_t j=genesLoci[i];j<genesLoci[i+1];++j){
+                child[j] = parent1[j]*maskBit + parent2[j]*(1 - maskBit);
             }
         }
-        delete[] _genesLoci;
     }
 }
 
-void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child){
+void uniformCrossover(uint8_t *parent1, uint8_t *parent2, uint64_t length, uint8_t *child){
     assert(child);
     std::random_device rd;  
     std::mt19937 gen(rd()); 
-    std::uniform_int_distribution<uint64_t> dis(0, UINT64_MAX);
-    uint64_t mask = dis(gen);
-    for(int i=0;i<length;++i){
-        uint8_t maskBit = mask & (1<<i);
+    std::uniform_int_distribution<uint8_t> dis(0, 1);
+    for(uint64_t i=0;i<length;++i){
+        uint8_t maskBit = dis(gen);
         child[i] = parent1[i]*maskBit + parent2[i]*(1 - maskBit);
     }
 }
