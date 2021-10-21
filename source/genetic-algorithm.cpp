@@ -54,13 +54,11 @@ void rouletteRanking(int populationSize, float *fitness, int *winners, int winne
         float pick = dis(gen);
         winners[i] = std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize, pick) - cumulativeProbabilities; 
     }
-    delete cumulativeProbabilities;
+    delete[] cumulativeProbabilities;
 }
 
 void calculateRanks(float* fitness, int populationSize, bool maximizeFitness, int* ranksLookup){
-    if(!ranksLookup){
-        ranksLookup = new int[populationSize];
-    }
+    assert(ranksLookup);
     float *fitnessOrdered = new float[populationSize];
     std::memcpy(fitnessOrdered, fitness, populationSize*sizeof(float));
     std::sort(fitnessOrdered, fitnessOrdered+populationSize-1);
@@ -78,13 +76,11 @@ void calculateRanks(float* fitness, int populationSize, bool maximizeFitness, in
             ranksLookup[i] = fitnessMap[fitnessOrdered[i]];
         }
     }
-    delete fitnessOrdered;
+    delete[] fitnessOrdered;
 }
 
 void calculateLinearRankingProbabilities(float selectionPressure, float *probabilities, int populationSize){
-    if(!probabilities){
-        probabilities = new float[populationSize];
-    }
+    assert(probabilities);
     float k2 = selectionPressure/float(populationSize - 1);
     probabilities[0] = selectionPressure;
     for(int i=1;i<populationSize-1;++i){
@@ -98,7 +94,7 @@ void calculateLinearRankingProbabilities(float selectionPressure, float *probabi
 float* linearRankingProbabilitiesGenerator(float selectionPressure, int populationSize){
     float* temp_probabilities;
     auto temp_iterator = linearRanksData.find(selectionPressure);
-    RanksData *temp_data;
+    RanksData *temp_data = NULL;
     int previousRank = 0;
     if(temp_iterator!=linearRanksData.end()){
         auto temp_map = temp_iterator->second;
@@ -116,7 +112,7 @@ float* linearRankingProbabilitiesGenerator(float selectionPressure, int populati
             temp_data->usage++;
         }
     }
-    if(temp_data){
+    if(temp_data!=NULL){
         int rank=0;
         RanksData* nextData = temp_data;
         for(const auto& m : linearRanksData){
@@ -133,7 +129,7 @@ float* linearRankingProbabilitiesGenerator(float selectionPressure, int populati
         if(rank<storedProbabilities){
             if(previousRank>=storedProbabilities){
                 calculateLinearRankingProbabilities(selectionPressure, temp_probabilities, populationSize);
-                delete nextData->probabilities;
+                delete[] nextData->probabilities;
             }
         }
     } else {
@@ -174,7 +170,7 @@ void deleteProbabilities(float* probabilities, bool linear){
         }
     }
     if(!exists){
-        delete probabilities;
+        delete[] probabilities;
     }
 }
 
@@ -184,9 +180,7 @@ void linearRanking(int populationSize, float *fitness, bool maximizeFitness, flo
     int *ranksLookup = new int[populationSize];
     calculateRanks(fitness, populationSize, maximizeFitness, ranksLookup);
     float *cumulativeProbabilities = linearRankingProbabilitiesGenerator(selectionPressure, populationSize);
-    if(!winners){
-        winners = new int[winnersSize];
-    }
+    assert(winners);
     std::random_device rd;  
     std::mt19937 gen(rd()); 
     std::uniform_real_distribution<> dis(cumulativeProbabilities[0], cumulativeProbabilities[populationSize-1]);
@@ -194,15 +188,13 @@ void linearRanking(int populationSize, float *fitness, bool maximizeFitness, flo
         winners[i] = ranksLookup[std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize, dis(gen)) - cumulativeProbabilities];
     }
     deleteProbabilities(cumulativeProbabilities, true);
-    delete ranksLookup;
+    delete[] ranksLookup;
 }
 
 void calculateExponentialRankingProbabilities(float k1, float *probabilities, int populationSize, float startingValue, int startingIndex){
     assert(startingIndex>=0 && "calculateExponentialRankingProbabilities: startingIndex must be positive.\n");
     assert(startingValue>=0 && "calculateExponentialRankingProbabilities: startingValue must be positive.\n");
-    if(!probabilities){
-        probabilities = new float[populationSize - startingIndex];
-    }
+    assert(probabilities);
     if(startingIndex) {
         probabilities[0] = startingValue + k1*std::pow(1.-k1, float(startingIndex+1));
     } else {
@@ -216,7 +208,7 @@ void calculateExponentialRankingProbabilities(float k1, float *probabilities, in
 float* exponentialRankingProbabilitiesGenerator(float k1, int populationSize){
     float* temp_probabilities;
     auto temp_iterator = exponentialRanksData.find(k1);
-    RanksData *temp_data;
+    RanksData *temp_data = NULL;
     int previousRank = 0;
     if(temp_iterator!=exponentialRanksData.end()){
         temp_data = &(temp_iterator->second); 
@@ -227,7 +219,7 @@ float* exponentialRankingProbabilitiesGenerator(float k1, int populationSize){
             }
             temp_probabilities = temp_data->probabilities;
             temp_data->usage++;
-        if(temp_data){
+        if(temp_data!=NULL){
             int rank=0;
             RanksData* nextData = temp_data;
             for(const auto& m : exponentialRanksData){
@@ -242,7 +234,7 @@ float* exponentialRankingProbabilitiesGenerator(float k1, int populationSize){
             if(rank<storedProbabilities){
                 if(previousRank>=storedProbabilities){
                     calculateExponentialRankingProbabilities(k1, temp_probabilities, populationSize, 0., 0);
-                    delete nextData->probabilities;
+                    delete[] nextData->probabilities;
                     temp_data->populationSize = populationSize;
                 }
                 else{
@@ -255,7 +247,7 @@ float* exponentialRankingProbabilitiesGenerator(float k1, int populationSize){
             }
         }
     } 
-    if(!temp_data){
+    if(temp_data==NULL){
         calculateExponentialRankingProbabilities(k1, temp_probabilities, populationSize, 0., 0);
         bool mustBreak = false;
         for(const auto& m : exponentialRanksData){
@@ -289,7 +281,7 @@ void exponentialRanking(int populationSize, float *fitness, bool maximizeFitness
         winners[i] = ranksLookup[std::lower_bound(cumulativeProbabilities, cumulativeProbabilities+populationSize, dis(gen)) - cumulativeProbabilities];
     }
     deleteProbabilities(cumulativeProbabilities, false);
-    delete ranksLookup;
+    delete[] ranksLookup;
 }
 
 void tournamentRanking(int populationSize, float *fitness, bool maximizeFitness, int tournamentSize, int *winners, int winnersSize){
@@ -297,9 +289,7 @@ void tournamentRanking(int populationSize, float *fitness, bool maximizeFitness,
     assert(tournamentSize < populationSize && "tournamentRanking: tournamentSize must be less than populationSize");
     int *ranksLookup = new int[populationSize];
     calculateRanks(fitness, populationSize, maximizeFitness, ranksLookup);
-    if(!winners){
-        winners = new int[winnersSize];
-    }
+    assert(winners);
     for(int k=0;k<winnersSize;++k){
         //Inside-out Fisher-Yattes Shuffle to get a random permutation of [0, populationSize-1]
         std::random_device rd;  
@@ -323,16 +313,14 @@ void tournamentRanking(int populationSize, float *fitness, bool maximizeFitness,
     for(int i=0;i<winnersSize;++i){
         winners[i] = ranksLookup[winners[i]];
     }
-    delete ranksLookup;
+    delete[] ranksLookup;
 }
 
 void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint64_t *genesLoci, int genesLociLength){
    assert(length>2 && "twoPointsCrossover: can't crossover genomes of size less than 3.\n");
    assert(genesLociLength>2 && "twoPointsCrossover: can't crossover genomes with less than 3 genes.\n");
    assert(std::is_sorted(genesLoci, genesLoci+genesLociLength) && "twoPointsCrossover: genesLoci needs to be sorted in non-descending order.\n");
-    if(!child){
-        child = new uint8_t[length];
-   }
+   assert(child);
    std::random_device rd;  
    std::mt19937 gen(rd()); 
    std::uniform_int_distribution<> dis(0, genesLociLength-1);
@@ -351,9 +339,7 @@ void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t 
 
 void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child){
    assert(length>2 && "twoPointsCrossover: can't crossover genomes of size less than 3.\n");
-    if(!child){
-        child = new uint8_t[length];
-   }
+   assert(child);
    std::random_device rd;  
    std::mt19937 gen(rd()); 
    std::uniform_int_distribution<> dis(1, length-2);
@@ -373,9 +359,7 @@ void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t 
 
 void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child, uint64_t *genesLoci, int genesLociLength){
    assert(std::is_sorted(genesLoci, genesLoci+genesLociLength) && "uniformCrossover: genesLoci needs to be sorted in non-descending order.\n");
-    if(!child){
-        child = new uint8_t[length];
-    }
+    assert(child);
     std::random_device rd;  
     std::mt19937 gen(rd()); 
     std::uniform_int_distribution<uint64_t> dis(0, UINT64_MAX);
@@ -391,7 +375,7 @@ void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *c
                 child[i] = parent1[i]*maskBit + parent2[i]*(1 - maskBit);
             }
         }
-        delete _genesLoci;
+        delete[] _genesLoci;
     } else {
         uint64_t *_genesLoci = new uint64_t[genesLociLength+1];
         _genesLoci[genesLociLength] = length;
@@ -402,14 +386,12 @@ void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *c
                 child[i] = parent1[i]*maskBit + parent2[i]*(1 - maskBit);
             }
         }
-        delete _genesLoci;
+        delete[] _genesLoci;
     }
 }
 
 void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *child){
-    if(!child){
-        child = new uint8_t[length];
-    }
+    assert(child);
     std::random_device rd;  
     std::mt19937 gen(rd()); 
     std::uniform_int_distribution<uint64_t> dis(0, UINT64_MAX);
@@ -419,6 +401,7 @@ void uniformCrossover(uint8_t *parent1, uint8_t *parent2, int length, uint8_t *c
         child[i] = parent1[i]*maskBit + parent2[i]*(1 - maskBit);
     }
 }
+
 void mutate(uint8_t *individual, int length, float mutationProbability){
     assert(mutationProbability>0 && "mutate: mutationProbability must be greater than 0.\n");
     assert(mutationProbability<1 && "mutate: mutationProbability must be less than 1.\n");
