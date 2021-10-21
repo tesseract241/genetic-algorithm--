@@ -363,26 +363,22 @@ void uniformCrossover(uint8_t *parent1, uint8_t *parent2, uint64_t length, uint8
     std::random_device rd;  
     std::mt19937 gen(rd()); 
     std::uniform_int_distribution<uint8_t> dis(0, 1);
-    if(genesLoci[0]!=0 || genesLoci[genesLociLength-1]!=length-1){
+    if(genesLoci[0]!=0 || genesLoci[genesLociLength-1]!=length){
         uint64_t start  = genesLoci[0]!=0 ? 1 : 0;
-        uint64_t end    = genesLoci[genesLociLength-1]!=length-1 ? 1 : 0;
+        uint64_t end    = genesLoci[genesLociLength-1]!=length ? 1 : 0;
         uint64_t *_genesLoci = new uint64_t[genesLociLength + start + end];
         _genesLoci[0] = 0;
-        _genesLoci[genesLociLength + start + end - 1] = length - 1;
+        _genesLoci[genesLociLength + start + end - 1] = length;
         std::memcpy(_genesLoci + start, genesLoci, genesLociLength);
         for(uint64_t i=0;i<genesLociLength + start + end - 1;++i){
             uint8_t maskBit = dis(gen);
-            for(uint64_t j=_genesLoci[i];j<_genesLoci[i+1];++j){
-                child[j] = parent1[j]*maskBit + parent2[j]*(1 - maskBit);
-            }
+            std::memcpy(child + _genesLoci[i], maskBit ? parent1 + _genesLoci[i] : parent2 + _genesLoci[i], _genesLoci[i+1] - _genesLoci[i]);
         }
         delete[] _genesLoci;
     } else{
         for(int i=0;i<genesLociLength-1;++i){
             uint8_t maskBit = dis(gen);
-            for(uint64_t j=genesLoci[i];j<genesLoci[i+1];++j){
-                child[j] = parent1[j]*maskBit + parent2[j]*(1 - maskBit);
-            }
+            std::memcpy(child + genesLoci[i], maskBit ? parent1 + genesLoci[i] : parent2 + genesLoci[i], genesLoci[i+1] - genesLoci[i]);
         }
     }
 }
