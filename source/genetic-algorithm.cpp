@@ -323,14 +323,32 @@ void twoPointsCrossover(uint8_t *parent1, uint8_t *parent2, uint64_t length, uin
    assert(child);
    std::random_device rd;  
    std::mt19937 gen(rd()); 
-   std::uniform_int_distribution<> dis(0, genesLociLength-1);
-   uint64_t cut1 = genesLoci[dis(gen)];
-   uint64_t cut2;
-   do{cut2 = genesLoci[dis(gen)];} while(cut2==cut1);
-   if(cut1>cut2){
-        uint64_t dummy = cut2;
-        cut2 = cut1;
-        cut1= dummy;
+   uint64_t cut1, cut2;
+   if(genesLoci[0]!=0 || genesLoci[genesLociLength-1]!=length){
+       uint64_t start  = genesLoci[0]!=0 ? 1 : 0;
+       uint64_t end    = genesLoci[genesLociLength-1]!=length ? 1 : 0;
+       uint64_t *_genesLoci = new uint64_t[genesLociLength + start + end];
+       _genesLoci[0] = 0;
+       _genesLoci[genesLociLength + start + end - 1] = length;
+       std::memcpy(_genesLoci + start, genesLoci, genesLociLength);
+       std::uniform_int_distribution<> dis(0, genesLociLength + start + end - 1);
+       cut1 = _genesLoci[dis(gen)];
+       do{cut2 = _genesLoci[dis(gen)];} while(cut2==cut1);
+       if(cut1>cut2){
+            uint64_t dummy = cut2;
+            cut2 = cut1;
+            cut1= dummy;
+       }
+       delete[] _genesLoci;
+   } else{
+       std::uniform_int_distribution<> dis(0, genesLociLength - 1);
+       cut1 = genesLoci[dis(gen)];
+       do{cut2 = genesLoci[dis(gen)];} while(cut2==cut1);
+       if(cut1>cut2){
+            uint64_t dummy = cut2;
+            cut2 = cut1;
+            cut1= dummy;
+       }
    }
    std::memcpy(child, parent1, cut1);
    std::memcpy(child+cut1, parent2+cut1, cut2 - cut1);
